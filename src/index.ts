@@ -98,6 +98,28 @@ const createQueryResponse = ({ success, message, data = null, error = null }: Qu
 // 6. CRUD Operations
 
 // A. Create a new recipe document
+const createRecipe = async (data: IRecipe): Promise<QueryResponse> => {
+  try { 
+    const recipe = new Recipe(data)
+    const addedRecipe = await recipe.save()
+    return createQueryResponse({
+      success: true,
+      message: "Recipe created successfully",
+      data: addedRecipe
+    })
+  } catch (error) {
+    const errMsg = error instanceof Error ? error.message : "Unknown error occurred"
+    const statusCode = typeof (error as any).code === "number" ? (error as any).code : 500;
+    return createQueryResponse({
+      success: false,
+      message: "Recipe creation failed",
+      error: {
+        details: errMsg,
+        statusCode: statusCode
+      }
+    })
+      }
+}
 
 // B. Get all recipies from database
 
@@ -107,4 +129,58 @@ const createQueryResponse = ({ success, message, data = null, error = null }: Qu
 
 // E. Deletes a document by ID
 
-// 7. Usage Examples
+// 7. USAGE EXAMPLES
+
+const main = async () => {
+  
+  // CRUD OPERATIONS
+
+  // ---------> CREATE A NEW RECIPE DOCUMENT <---------
+
+  // const responseCreateRecipe = await createRecipe({
+  //   title: "Spinach Pie",
+  //   description: "Vegetarian pie with spinach and cheese.",
+  //   ingredients: [
+  //     { name: "Spinach", amount: "300g" },
+  //     { name: "Cream cheese", amount: "150g" },
+  //     { name: "Eggs", amount: "2 units" }
+  //   ],
+  //   preparationTime: 45,
+  //   portions: 4,
+  //   isVegetarian: true
+  // });
+
+  // const responseCreateRecipe = await createRecipe({
+  //   title: "Chicken Curry",
+  //   description: "Indian-style curry with chicken.",
+  //   ingredients: [
+  //     { name: "Chicken breast", amount: "500g" },
+  //     { name: "Curry powder", amount: "2 tablespoons" },
+  //     { name: "Heavy cream", amount: "200ml" }
+  //   ],
+  //   preparationTime: 60,
+  //   portions: 4,
+  //   isVegetarian: false
+  // })
+
+  // const responseCreateRecipe = await createRecipe({
+  //   title: "Oatmeal Cookies",
+  //   description: "Healthy sugar-free snack.",
+  //   ingredients: [
+  //     { name: "Oats", amount: "2 cups" },
+  //     { name: "Banana", amount: "2 ripe units" },
+  //     { name: "Raisins", amount: "1/2 cup" }
+  //   ],
+  //   preparationTime: 25,
+  //   portions: 12,
+  //   isVegetarian: true
+  // })
+
+  // console.log(responseCreateRecipe)
+
+
+  // ---------> GET ALL RECIPIES FROM MONGO DB <---------
+  
+}
+
+main()
