@@ -30,7 +30,6 @@ app/
 Estas son algunas de las dependencias clave que se usan en el proyecto:
 
 - **mongoose**: ODM para interactuar con MongoDB
-- **dotenv**: Carga variables de entorno desde `.env`
 - **typescript**: Superset de JavaScript tipado
 - **ts-node**: Permite ejecutar archivos `.ts` sin compilarlos manualmente
 
