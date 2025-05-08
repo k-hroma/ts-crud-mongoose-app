@@ -94,7 +94,6 @@ const Recipe = model<IRecipe>("Recipe", RecipeSchema);
 // 5. Response utility Function
 const createQueryResponse = ({ success, message, data = null, error = null }: QueryResponse): QueryResponse => { return { success, message, data, error } };
 
-
 // 6. CRUD Operations
 
 // A. Create a new recipe document
@@ -106,7 +105,7 @@ const createRecipe = async (data: IRecipe): Promise<QueryResponse> => {
       success: true,
       message: "Recipe created successfully",
       data: addedRecipe
-    })
+    });
   } catch (error) {
     const errMsg = error instanceof Error ? error.message : "Unknown error occurred"
     const statusCode = typeof (error as any).code === "number" ? (error as any).code : 500;
@@ -133,7 +132,7 @@ const getRecipies = async (): Promise<QueryResponse> => {
 
   } catch (error) {
     const errMsg = error instanceof Error ? error.message : "Unknown error occurred";
-    const statusCode = typeof (error as any) === "number" ? (error as any).code : 500;
+    const statusCode = typeof (error as any).code === "number" ? (error as any).code : 500;
     return createQueryResponse({
       success: false,
       message: "Failed to obtain recipies",
@@ -147,11 +146,11 @@ const getRecipies = async (): Promise<QueryResponse> => {
  }
 
 // C. Get a document by MongoDB ID
-const getRecipeById = async (id: string) => {
+const getRecipeById = async (id: string): Promise<QueryResponse> => {
   try {
     const recipe = await Recipe.findById(id)
     if (!recipe) { 
-      createQueryResponse({
+      return createQueryResponse({
         success: false,
         message: "Recipe not found",
         error: {
@@ -181,15 +180,77 @@ const getRecipeById = async (id: string) => {
  }
 
 // D. Update a document by ID
-const updateRecipe = async (id:string, data:RecipeUpdateInput) => { }
+const updateRecipe = async (id: string, data: RecipeUpdateInput): Promise<QueryResponse> => {
+  try {
+    const updatedRecipe = await Recipe.findByIdAndUpdate(id, data, { new: true });
+    if (!updatedRecipe) {
+      return createQueryResponse({
+        success: false,
+        message: "Recipe not found",
+        error: {
+          details: "Id does not exist",
+          statusCode: 404
+        }
+      })
+    }
+    return createQueryResponse({
+      success: true,
+      message: "Recipe successfully updated",
+      data: updatedRecipe
+    })
+  } catch (error) {
+    const errMsg = error instanceof Error ? error.message : "Unknown error"
+    const statusCode = typeof (error as any).code === "number" ? (error as any).code : 500
+    return createQueryResponse({
+      success: false,
+      message: "Error at updating recipe",
+      error: {
+        details: errMsg,
+        statusCode: statusCode
+      }
+    })
+   }
+  
+ }
 
 // E. Deletes a document by ID
-const deleteRecipe = async (id: string) => { }
+const deleteRecipe = async (id: string): Promise<QueryResponse> => { 
+  try {
+    const deletedRecipe = await Recipe.findByIdAndDelete(id)
+    if (!deletedRecipe) {
+      return createQueryResponse({
+        success: false,
+        message: "The recipe does not exist or has already been deleted",
+        error: {
+          details: "Recipe not found",
+          statusCode: 404
+        }
+      })
+    }
+    return createQueryResponse({
+      success: true,
+      message: "Recipe successfully deleted",
+      data: deletedRecipe
+    })
+  } catch (error) {
+    const errMsg = error instanceof Error ? error.message : "Unknown error"
+    const statusCode = typeof (error as any).code === "number" ? (error as any).code : 500
+    return createQueryResponse ({
+      success: false,
+      message: "Error deleting book",
+      error: {
+        details: errMsg,
+        statusCode:statusCode
+      }
+        
+    })
+    }
+}
 
 // 7. USAGE EXAMPLES
 
 const main = async () => {
-// ---------> CREATE A NEW RECIPE DOCUMENT <---------
+  // ---------> CREATE A NEW RECIPE DOCUMENT <---------
   console.log("---------> CREATE A NEW RECIPE DOCUMENT <---------")
   const responseCreateRecipe1 = await createRecipe({
     title: "Spinach Pie",
@@ -229,6 +290,7 @@ const main = async () => {
     portions: 12,
     isVegetarian: true
   })
+
   console.log(responseCreateRecipe1)
   console.log(responseCreateRecipe2)
   console.log(responseCreateRecipe3)
@@ -237,11 +299,23 @@ const main = async () => {
   console.log("---------> GET ALL RECIPIES FROM MONGO DB <---------")
   const responseGetRecipies = await getRecipies()
   console.log(responseGetRecipies)
+  //to see the detail of the array of ingredients ->
+  // console.log(JSON.stringify(responseGetRecipies, null, 2))
 
   // ---------> GET A DOCUMENT BY MONGO DB ID <---------
-  console.log("---------> GET RECIPIE BY ID <---------")
+  console.log("---------> GET RECIPE BY ID <---------")
   const responseGetRecipieById = await getRecipeById("681bebac8674f23940fdb893")
   console.log(responseGetRecipieById)
+
+  // ---------> UPDATE A DOCUMENT BY MONGO DB ID <---------
+  console.log("---------> UPDATED RECIPE BY ID <---------")
+  const responseUpdatedRecipe = await updateRecipe("681bebac8674f23940fdb893", { description: "Updated description" })
+  console.log(responseUpdatedRecipe)
+
+  // ---------> DELETE A DOCUMENT BY MONGO DB ID <---------
+  console.log("---------> DELETED RECIPE BY ID <---------")
+  const responseDeleteRecipe = await deleteRecipe("681c9e1120df336cb382c858")
+  console.log(responseDeleteRecipe)
 }
 
 main()
