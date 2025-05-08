@@ -122,65 +122,126 @@ const createRecipe = async (data: IRecipe): Promise<QueryResponse> => {
 }
 
 // B. Get all recipies from database
+const getRecipies = async (): Promise<QueryResponse> => {
+  try {
+    const recipies = await Recipe.find()
+    return createQueryResponse({
+      success: true,
+      message: "Recipes obtained successfully",
+      data: recipies
+    })
+
+  } catch (error) {
+    const errMsg = error instanceof Error ? error.message : "Unknown error occurred";
+    const statusCode = typeof (error as any) === "number" ? (error as any).code : 500;
+    return createQueryResponse({
+      success: false,
+      message: "Failed to obtain recipies",
+      error: {
+        details: errMsg,
+        statusCode: statusCode
+      }
+    })
+  }
+
+ }
 
 // C. Get a document by MongoDB ID
+const getRecipeById = async (id: string) => {
+  try {
+    const recipe = await Recipe.findById(id)
+    if (!recipe) { 
+      createQueryResponse({
+        success: false,
+        message: "Recipe not found",
+        error: {
+          details: "There is no document with that ID",
+          statusCode: 404
+        }
+      });
+    }
+    return createQueryResponse({
+      success: true,
+      message: "Recipe found successfully",
+      data: recipe
+    })
+  } catch (error) { 
+    const errMsg = error instanceof Error ? error.message : "Unknown error";
+    const statusCode = typeof (error as any).code === "number" ? (error as any).code : 500;
+    return createQueryResponse({
+      success: false,
+      message: "Error searching for recipe",
+      error: {
+        details: errMsg,
+        statusCode: statusCode
+      }
+    })
+  }
+  
+ }
 
 // D. Update a document by ID
+const updateRecipe = async (id:string, data:RecipeUpdateInput) => { }
 
 // E. Deletes a document by ID
+const deleteRecipe = async (id: string) => { }
 
 // 7. USAGE EXAMPLES
 
 const main = async () => {
-  
-  // CRUD OPERATIONS
+// ---------> CREATE A NEW RECIPE DOCUMENT <---------
+  console.log("---------> CREATE A NEW RECIPE DOCUMENT <---------")
+  const responseCreateRecipe1 = await createRecipe({
+    title: "Spinach Pie",
+    description: "Vegetarian pie with spinach and cheese.",
+    ingredients: [
+      { name: "Spinach", amount: "300g" },
+      { name: "Cream cheese", amount: "150g" },
+      { name: "Eggs", amount: "2 units" }
+    ],
+    preparationTime: 45,
+    portions: 4,
+    isVegetarian: true
+  });
 
-  // ---------> CREATE A NEW RECIPE DOCUMENT <---------
+  const responseCreateRecipe2 = await createRecipe({
+    title: "Chicken Curry",
+    description: "Indian-style curry with chicken.",
+    ingredients: [
+      { name: "Chicken breast", amount: "500g" },
+      { name: "Curry powder", amount: "2 tablespoons" },
+      { name: "Heavy cream", amount: "200ml" }
+    ],
+    preparationTime: 60,
+    portions: 4,
+    isVegetarian: false
+  })
 
-  // const responseCreateRecipe = await createRecipe({
-  //   title: "Spinach Pie",
-  //   description: "Vegetarian pie with spinach and cheese.",
-  //   ingredients: [
-  //     { name: "Spinach", amount: "300g" },
-  //     { name: "Cream cheese", amount: "150g" },
-  //     { name: "Eggs", amount: "2 units" }
-  //   ],
-  //   preparationTime: 45,
-  //   portions: 4,
-  //   isVegetarian: true
-  // });
-
-  // const responseCreateRecipe = await createRecipe({
-  //   title: "Chicken Curry",
-  //   description: "Indian-style curry with chicken.",
-  //   ingredients: [
-  //     { name: "Chicken breast", amount: "500g" },
-  //     { name: "Curry powder", amount: "2 tablespoons" },
-  //     { name: "Heavy cream", amount: "200ml" }
-  //   ],
-  //   preparationTime: 60,
-  //   portions: 4,
-  //   isVegetarian: false
-  // })
-
-  // const responseCreateRecipe = await createRecipe({
-  //   title: "Oatmeal Cookies",
-  //   description: "Healthy sugar-free snack.",
-  //   ingredients: [
-  //     { name: "Oats", amount: "2 cups" },
-  //     { name: "Banana", amount: "2 ripe units" },
-  //     { name: "Raisins", amount: "1/2 cup" }
-  //   ],
-  //   preparationTime: 25,
-  //   portions: 12,
-  //   isVegetarian: true
-  // })
-
-  // console.log(responseCreateRecipe)
-
+  const responseCreateRecipe3 = await createRecipe({
+    title: "Oatmeal Cookies",
+    description: "Healthy sugar-free snack.",
+    ingredients: [
+      { name: "Oats", amount: "2 cups" },
+      { name: "Banana", amount: "2 ripe units" },
+      { name: "Raisins", amount: "1/2 cup" }
+    ],
+    preparationTime: 25,
+    portions: 12,
+    isVegetarian: true
+  })
+  console.log(responseCreateRecipe1)
+  console.log(responseCreateRecipe2)
+  console.log(responseCreateRecipe3)
 
   // ---------> GET ALL RECIPIES FROM MONGO DB <---------
-  
+  console.log("---------> GET ALL RECIPIES FROM MONGO DB <---------")
+  const responseGetRecipies = await getRecipies()
+  console.log(responseGetRecipies)
+
+  // ---------> GET A DOCUMENT BY MONGO DB ID <---------
+  console.log("---------> GET RECIPIE BY ID <---------")
+  const responseGetRecipieById = await getRecipeById("681bebac8674f23940fdb893")
+  console.log(responseGetRecipieById)
 }
 
 main()
